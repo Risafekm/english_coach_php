@@ -90,50 +90,65 @@ function updatePreliminaryTest2List($preliminaryInput, $preliminaryTest2params)
         }
     }
 }
+//post
 
-
-//postFunction
-
-function storePreliminaryTest2List($preliminaryInput){
-
+function storePreliminaryTest2List($preliminaryInput) {
     global $conn;
 
-    $prelim = mysqli_real_escape_string($conn, $preliminaryInput['prelim_trans_question']);
-    $tnum = mysqli_real_escape_string($conn, $preliminaryInput['t_num']);
-   
-    
+    $prelim_trans_question = mysqli_real_escape_string($conn, $preliminaryInput['prelim_trans_question']);
+    $t_num = mysqli_real_escape_string($conn, $preliminaryInput['t_num']);
+    $prelim_trans_ques_num = mysqli_real_escape_string($conn, $preliminaryInput['prelim_trans_ques_num']);
+    $prelim_trans_answer = mysqli_real_escape_string($conn, $preliminaryInput['prelim_trans_answer']);
 
-    if(empty(trim($prelim))){
-     return error422('Enter the prelim_trans_question');
+    if (empty(trim($prelim_trans_question)) || empty(trim($prelim_trans_answer))) {
+        return error422('Enter both prelim_trans_question and prelim_trans_answer');
+    } else {
+        // Start a transaction to ensure data consistency
+        mysqli_begin_transaction($conn);
+
+        try {
+            // Insert into edu_preliminary_trans_questions
+            $query_questions = "INSERT INTO edu_preliminary_trans_questions(prelim_trans_question, t_num) VALUES ('$prelim_trans_question', '1')";
+            $result_questions = mysqli_query($conn, $query_questions);
+
+            if (!$result_questions) {
+                throw new Exception(mysqli_error($conn));
+            }
+
+            // Get the auto-generated ID from the first insert
+            $prelim_trans_ques_id = mysqli_insert_id($conn);
+
+            // Insert into edu_preliminary_translations
+            $query_translations = "INSERT INTO edu_preliminary_translations(prelim_trans_ques_num, prelim_trans_answer) VALUES ('$prelim_trans_ques_id', '$prelim_trans_answer')";
+            $result_translations = mysqli_query($conn, $query_translations);
+
+            if (!$result_translations) {
+                throw new Exception(mysqli_error($conn));
+            }
+
+            // If everything is successful, commit the transaction
+            mysqli_commit($conn);
+
+            $data = [
+                'status' => 201,
+                'message' => 'Data inserted successfully',
+            ];
+            header("HTTP/1.0 201 Created");
+            echo json_encode($data);
+
+        } catch (Exception $e) {
+            // If any step fails, rollback the transaction
+            mysqli_rollback($conn);
+
+            $data = [
+                'status' => 500,
+                'message' => 'Internal Server Error: ' . $e->getMessage(),
+            ];
+            header("HTTP/1.0 500 Internal Server Error");
+            echo json_encode($data);
+        }
     }
-    else{
-
-       $query = "INSERT INTO `edu_preliminary_trans_questions`(`prelim_trans_question`, `t_num`) VALUES ('$prelim','1')";
-       $result = mysqli_query($conn, $query);
-
-     if($result){
-  
-        $data = [
-            'status' => 201,
-            'message' => 'edu_preliminary_trans_questions Created Successfully',
-        ];
-        header("HTTP/1.0 201 Created");
-        echo json_encode($data);
-         
-
-     }else{
-        $data = [
-            'status' => 500,
-            'message' => 'Internal Server Error',
-        ];
-        header("HTTP/1.0 500 Internal Server Error");
-        echo json_encode($data);
-     }
-
-    }
-
 }
-
 
 //getFunction
 
@@ -141,7 +156,7 @@ function getPreliminaryTest2List(){
  
 global $conn;
 
-$query = "SELECT * FROM `edu_preliminary_trans_questions`";
+$query = "SELECT q.prelim_trans_question,q.prelim_trans_ques_num,a.prelim_trans_answer FROM edu_preliminary_trans_questions q INNER JOIN edu_preliminary_translations a ON q.prelim_trans_ques_num = a.prelim_trans_ques_num";
 $query_run = mysqli_query($conn ,$query);
 
 if($query_run){
@@ -188,7 +203,8 @@ if($preliminaryTest2params['prelim_trans_ques_num'] == null){
 
 $prelimNum = mysqli_real_escape_string($conn, $preliminaryTest2params['prelim_trans_ques_num']);
 
-$query = "SELECT * FROM `edu_preliminary_trans_questions` WHERE `prelim_trans_ques_num` = '$prelimNum' LIMIT 1";
+$query = "SELECT q.prelim_trans_question,q.prelim_trans_ques_num,a.prelim_trans_answer FROM edu_preliminary_trans_questions q INNER JOIN edu_preliminary_translations a ON q.prelim_trans_ques_num = a.prelim_trans_ques_num WHERE q.prelim_trans_ques_num = '$prelimNum' LIMIT 1";
+// "SELECT * FROM `edu_preliminary_trans_questions` WHERE `prelim_trans_ques_num` = '$prelimNum' LIMIT 1";
 $result = mysqli_query($conn,$query);
 
 if($result){
