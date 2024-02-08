@@ -51,35 +51,37 @@ function deletePreliminaryTest2($preliminaryTest2params){
 }
 
 //Update 
-
 function updatePreliminaryTest2List($preliminaryInput, $preliminaryTest2params)
 {
     global $conn;
 
     if (!isset($preliminaryTest2params['prelim_trans_ques_num'])) {
         return error422('id not found');
-    } 
+    }
 
     $prelimNum = mysqli_real_escape_string($conn, $preliminaryTest2params['prelim_trans_ques_num']);
-    $prelim = mysqli_real_escape_string($conn, $preliminaryInput['prelim_trans_question']);
-    
+    $prelimQuestion = mysqli_real_escape_string($conn, $preliminaryInput['prelim_trans_question']);
+    $prelimAnswer = mysqli_real_escape_string($conn, $preliminaryInput['prelim_trans_answer']); // Assuming prelim_trans_answer is part of the input
 
-    if (empty(trim($prelim))) {
+    if (empty(trim($prelimQuestion))) {
         return error422('Enter the prelim_trans_question');
-    }else {
+    } else {
 
-        $query = "UPDATE `edu_preliminary_trans_questions` SET `prelim_trans_question` = '$prelim', `prelim_trans_ques_num` ='$prelimNum'  WHERE `prelim_trans_ques_num` = '$prelimNum'";
-        $result = mysqli_query($conn, $query);
+        // Update edu_preliminary_trans_questions table
+        $queryQuestions = "UPDATE `edu_preliminary_trans_questions` SET `prelim_trans_question` = '$prelimQuestion' WHERE `prelim_trans_ques_num` = '$prelimNum'";
+        $resultQuestions = mysqli_query($conn, $queryQuestions);
 
-        if ($result) {
+        // Update edu_preliminary_translations table
+        $queryAnswers = "UPDATE `edu_preliminary_translations` SET `prelim_trans_answer` = '$prelimAnswer' WHERE `prelim_trans_ques_num` = '$prelimNum'";
+        $resultAnswers = mysqli_query($conn, $queryAnswers);
 
-            $data =[
+        if ($resultQuestions && $resultAnswers) {
+            $data = [
                 'status' => 200,
-                'message' => 'updated successfull',
+                'message' => 'updated successfully',
             ];
-            header("HTTP/1.0 200 Created");
+            header("HTTP/1.0 200 OK");
             echo json_encode($data);
-
         } else {
             $data = [
                 'status' => 500,
@@ -90,6 +92,7 @@ function updatePreliminaryTest2List($preliminaryInput, $preliminaryTest2params)
         }
     }
 }
+
 //post
 
 function storePreliminaryTest2List($preliminaryInput) {
