@@ -16,38 +16,47 @@ function error422($message){
 
 
 //delete
-
-function deletePreliminaryTest2($preliminaryTest2params){
- 
+function deletePreliminaryTest2($preliminaryTest2params) {
     global $conn;
 
-    if(!isset($preliminaryTest2params['prelim_trans_ques_num'])){
+    if (!isset($preliminaryTest2params['prelim_trans_ques_num'])) {
         return error422("id not found ");
     }
 
     $prelimNum = mysqli_real_escape_string($conn, $preliminaryTest2params['prelim_trans_ques_num']);
-    $query = "DELETE FROM `edu_preliminary_trans_questions` WHERE `prelim_trans_ques_num` = $prelimNum LIMIT 1";
-    $result = mysqli_query($conn ,$query);
 
-    if($result){
+    // Start a transaction to ensure both queries are executed or none
+    mysqli_begin_transaction($conn);
+
+    // Delete from edu_preliminary_trans_questions table
+    $query1 = "DELETE FROM `edu_preliminary_trans_questions` WHERE `prelim_trans_ques_num` = $prelimNum LIMIT 1";
+    $result1 = mysqli_query($conn, $query1);
+
+    // Delete from edu_preliminary_translations table
+    $query2 = "DELETE FROM `edu_preliminary_translations` WHERE `prelim_trans_ques_num` = $prelimNum LIMIT 1";
+    $result2 = mysqli_query($conn, $query2);
+
+    if ($result1 && $result2) {
+        // Commit the transaction if both queries are successful
+        mysqli_commit($conn);
 
         $data = [
             'status' => 200,
-            'message' => 'Student deleted successfully',
+            'message' => 'Values deleted successfully',
         ];
-        header("HTTP/1.0 200  success");
+        header("HTTP/1.0 200 success");
         return json_encode($data);
+    } else {
+        // Rollback the transaction if any query fails
+        mysqli_rollback($conn);
 
-    }else{
         $data = [
             'status' => 404,
-            'message' => 'Student not found',
+            'message' => 'Values not found or deletion failed',
         ];
-        header("HTTP/1.0 400  Not found");
+        header("HTTP/1.0 404 Not found");
         return json_encode($data);
     }
-
-
 }
 
 //Update 
