@@ -8,6 +8,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 include('functiontest2.php');
 
+
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
 if($requestMethod == 'GET'){
