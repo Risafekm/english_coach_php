@@ -6,14 +6,14 @@ header("Access-Control-Allow-Methods: DELETE");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 
-include('function.php');
+include('function_modules.php');
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
 if($requestMethod == 'DELETE'){
 
-$deleteCustomer = deleteCustomer($_GET);
-echo $deleteCustomer;
+$deleteModule = deleteModule($_GET);
+echo $deleteModule;
 
 }else{
 $data = [

@@ -6,7 +6,7 @@ header("Access-Control-Allow-Methods: PUT");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 
-include('function.php');
+include('function_modules.php');
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
@@ -14,11 +14,11 @@ if($requestMethod == 'PUT') {
 
     $inputData = json_decode(file_get_contents("php://input"),true);
     if(empty($inputData)) {
-        $storeCustomer = updateCustomer($_POST,$_GET);
+        $storeModule = updateModule($_POST,$_GET);
     } else {
-        $storeCustomer = updateCustomer($inputData,$_GET);
+        $storeModule = updateModule($inputData,$_GET);
     }
-    echo $storeCustomer;
+    echo $storeModule;
 }else {
     $data = [
         'status' => 405,

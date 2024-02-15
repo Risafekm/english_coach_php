@@ -7,7 +7,7 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 
-include('function.php');
+include('function_modules.php');
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
@@ -16,13 +16,13 @@ if($requestMethod == 'POST'){
     $inputData = json_decode(file_get_contents("php://input"),true);
     if(empty($inputData)){
        
-        $storeCustomer = storeCustomer($_POST);
+        $storeModule = storeModule($_POST);
     }else{
     
-        $storeCustomer = storeCustomer($inputData);
+        $storeModule = storeModule($inputData);
     }
     
-    echo $storeCustomer;
+    echo $storeModule;
     
     }else{
     $data = [
