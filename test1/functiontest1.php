@@ -168,7 +168,7 @@ function storeprelims($prilimsInput) {
 function getPrilimstList() {
     global $conn;
 
-    $query = "SELECT `edu_topic_answers`.`topic_que_num`,`edu_topic_answers`.`topic_ans_answer`, `edu_topic_questions`.`topic_que_question` FROM `edu_topic_answers`, `edu_topic_questions` WHERE `edu_topic_answers`.`topic_que_num` = `edu_topic_questions`.`topic_que_num`";
+    $query = "SELECT `edu_topic_answers`.`topic_que_num`,`edu_topic_answers`.`topic_ans_answer`, `edu_topic_questions`.`topic_que_question` FROM `edu_topic_answers`, `edu_topic_questions`  WHERE `edu_topic_answers`.`topic_que_num` = `edu_topic_questions`.`topic_que_num`";
 
     $query_run = mysqli_query($conn, $query);
     
