@@ -1,40 +1,65 @@
 <?php
-// error_reporting(0);
-header("Access-Control-Allow-Origin:*");
-header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: PUT");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-include 'connection.php';
+require 'connection.php';
 
-// Get the JSON array from the request body
-$data = json_decode(file_get_contents("php://input"), true);
+function reorderModules($updatedModules) {
+    global $conn;
 
-if ($data) {
-    // Loop through the array and update the order in the database
-    foreach ($data as $index => $item) {
-        $mod_order = $item['mod_order'];
-        $mod_num = $item['mod_num'];
+    try {
+        $conn->autocommit(FALSE); // Start transaction
 
-        // Update the order in the database
-        $updateQuery = "UPDATE edu_modules SET mod_order = $mod_order WHERE mod_num = $mod_num";
+        foreach ($updatedModules as $module) {
+            $modNum = mysqli_real_escape_string($conn, $module['mod_num']);
+            $modOrder = mysqli_real_escape_string($conn, $module['mod_order']);
 
-        if ($conn->query($updateQuery) === TRUE) {
-            // Successfully updated order for the record with mod_num = $mod_num
-        } else {
-            // Failed to update order
-            echo "Error updating order: " . $conn->error;
+            $query = "UPDATE `edu_modules` SET `mod_order` = '$modOrder' WHERE `mod_num` = '$modNum'";
+
+            $result = mysqli_query($conn, $query);
+
+            if (!$result) {
+                throw new Exception(mysqli_error($conn));
+            }
         }
+
+        $conn->commit(); // Commit transaction
+        $data = [
+            'status' => 200,
+            'message' => 'Modules reordered successfully',
+        ];
+        header("HTTP/1.0 200 OK");
+        echo json_encode($data);
+    } catch (Exception $e) {
+        $conn->rollback(); // Rollback transaction in case of error
+        $data = [
+            'status' => 500,
+            'message' => 'Internal Server Error: ' . $e->getMessage(),
+        ];
+        header("HTTP/1.0 500 Internal Server Error");
+        echo json_encode($data);
+    } finally {
+        $conn->autocommit(TRUE); // Restore autocommit to true
     }
+}
 
-    // Close the database connection
-    $conn->close();
+// Usage example
+if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    $requestData = json_decode(file_get_contents('php://input'), true);
 
-    // Send a response back to the client
-    http_response_code(200);
-    echo json_encode(array("message" => "Order updated successfully"));
+    if (isset($requestData['modules'])) {
+        reorderModules($requestData['modules']);
+    } else {
+        $data = [
+            'status' => 422,
+            'message' => 'Invalid request format',
+        ];
+        header("HTTP/1.0 422 Unprocessable Entity");
+        echo json_encode($data);
+    }
 } else {
-    // Invalid or empty data
-    http_response_code(400);
-    echo json_encode(array("message" => "Invalid or empty data"));
+    $data = [
+        'status' => 405,
+        'message' => 'Method Not Allowed',
+    ];
+    header("HTTP/1.0 405 Method Not Allowed");
+    echo json_encode($data);
 }
 ?>
