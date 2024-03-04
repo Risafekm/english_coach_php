@@ -57,4 +57,44 @@ function updateUser($userInput, $userparams){
     }
 }
 
-?>
+
+//authentic user
+
+
+    function storeUser($userInput) {
+        global $conn;
+    
+        if (!isset($userInput['user_email']) || !isset($userInput['user_pswd'])) {
+            return error422('Username and password are required');
+        }
+    
+        $username = mysqli_real_escape_string($conn, $userInput['user_email']);
+        $password = mysqli_real_escape_string($conn, $userInput['user_pswd']);
+        $hashedPassword = md5($password);
+    
+        // Prepare and execute SQL query
+        $query = "SELECT * FROM edu_users WHERE user_email = '$username' AND user_pswd = '$password'";
+        $result = mysqli_query($conn, $query);
+    
+        // Check if the query was successful
+        if ($result && mysqli_num_rows($result) == 1) {
+            $user = mysqli_fetch_assoc($result);
+            $data = [
+                'status' => 'success',
+                'message' => 'User authenticated successfully',
+                'user' => $user
+            ];
+            header("HTTP/1.0 200 OK");
+            echo json_encode($data);
+        } else {
+            // User authentication failed
+            $data = [
+                'status' => 'error',
+                'message' => 'Invalid username or password'
+            ];
+            header("HTTP/1.0 401 Unauthorized");
+            echo json_encode($data);
+        }
+    }
+    
+    ?>
