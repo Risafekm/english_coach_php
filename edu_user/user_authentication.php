@@ -15,13 +15,13 @@ if($requestMethod == 'POST'){
 $userParams = json_decode(file_get_contents("php://input"),true);
 if(empty($userParams)){
    
-    $storeUser = storeUser($_POST);
+    $getUser = getUser($_POST);
 }else{
 
-    $storeUser = storeUser($userParams);
+    $getUser = getUser($userParams);
 }
 
-echo $storeUser;
+echo $getUser;
 
 }else{
 $data = [
