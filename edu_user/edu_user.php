@@ -61,7 +61,7 @@ function updateUser($userInput, $userparams){
 //authentic user
 
 
-    function storeUser($userInput) {
+    function getUser($userInput) {
         global $conn;
     
         if (!isset($userInput['user_email']) || !isset($userInput['user_pswd'])) {
