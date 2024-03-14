@@ -13,6 +13,48 @@ function error422($message){
     exit();
 }
 
+function insertQuestionsAndOptions($questions) {
+    global $conn;
+
+    // Iterate over each question
+    foreach ($questions as $questionData) {
+        $question = mysqli_real_escape_string($conn, $questionData['question']);
+        $correctAnswer = mysqli_real_escape_string($conn, $questionData['correct_answer']);
+
+        // Insert the question
+        $questionQuery = "INSERT INTO edu_trial_mcq_questions (trail_mcq_question, trail_mcq_correct_answer) VALUES ('$question', '$correctAnswer')";
+        mysqli_query($conn, $questionQuery);
+
+        // Get the ID of the newly inserted question
+        $question_id = mysqli_insert_id($conn);
+
+        $options = $questionData['options'];
+        // Insert options for the question
+        foreach ($options as $option) {
+            $option = mysqli_real_escape_string($conn, $option);
+            $optionQuery = "INSERT INTO edu_trial_mcq_options (trial_mcq_num, trial_mcq_answer) VALUES ($question_id, '$option')";
+            mysqli_query($conn, $optionQuery);
+        }
+    }
+}
+
+// Example data for questions, options, and correct answers
+$questions = array(
+    array(
+        'question' => 'Question 1?',
+        'options' => array('Option 1', 'Option 2', 'Option 3', 'Option 4'),
+        'correct_answer' => 'Option 2'
+    ),
+    array(
+        'question' => 'Question 2?',
+        'options' => array('Option A', 'Option B', 'Option C', 'Option D'),
+        'correct_answer' => 'Option B'
+    )
+);
+
+
+
+
 // Function to fetch questions and options from the database
 function getQuestionsAndOptions() {
     global $conn;
@@ -22,14 +64,16 @@ function getQuestionsAndOptions() {
                 edu_trial_mcq_questions.trail_mcq_num,
                 edu_trial_mcq_questions.trail_mcq_question, 
                 JSON_ARRAYAGG(edu_trial_mcq_options.trial_mcq_answer) AS options,
-                edu_trial_mcq_options.trial_mcq_answer AS mcq_answer
+                (SELECT edu_trial_mcq_options.trial_mcq_answer  FROM 
+                edu_trial_mcq_options WHERE
+                edu_trial_mcq_options.trial_mcq_id = edu_trial_mcq_questions.trial_mcq_id) AS mcq_answer
               FROM 
                 edu_trial_mcq_questions
               JOIN 
                 edu_trial_mcq_options ON edu_trial_mcq_questions.trail_mcq_num = edu_trial_mcq_options.trial_mcq_num
               GROUP BY 
                 edu_trial_mcq_questions.trail_mcq_num";
-
+ 
     // Execute the query
     $result = mysqli_query($conn, $query);
 
