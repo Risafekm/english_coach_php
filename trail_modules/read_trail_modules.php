@@ -6,14 +6,14 @@ header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 
-include('functiontrail.php');
+include('function_trail_modules.php');
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 
 if($requestMethod == 'GET'){
 
-$getTrailModules = getTrailModules();
-echo $getTrailModules;
+$TrailModules = getTrailModules();
+echo $TrailModules;
 
 
 }else{

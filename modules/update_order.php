@@ -14,7 +14,7 @@ if ($inputData) {
     // Iterate through the received array of modules and update their orders in the database
     foreach ($inputData as $index => $module) {
       $modNum = mysqli_real_escape_string($conn, $module['mod_num']);
-      $modOrder = mysqli_real_escape_string($conn, $index + 1); // Assuming 1-based indexing
+      $modOrder = mysqli_real_escape_string($conn, $index +1); // Assuming 1-based indexing
       $query = "UPDATE `edu_modules` SET `mod_order` ='$modOrder' WHERE `mod_num` = '$modNum'";
       $result = mysqli_query($conn, $query);
       if (!$result) {
