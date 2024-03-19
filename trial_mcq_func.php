@@ -171,6 +171,148 @@ function insertMCQuestionWithOptions($questionData, $options) {
     echo json_encode(array("success" => true, "trial_mcq_id" => $optionIdRow['trial_mcq_id']));
 }
 
+//delete method
 
+function deleteMCQuestion($questionId) {
+    global $conn;
 
+    // Delete options for the question
+    $deleteOptionsQuery = "DELETE FROM edu_trial_mcq_options WHERE trial_mcq_num = '$questionId'";
+    $deleteOptionsResult = mysqli_query($conn, $deleteOptionsQuery);
 
+    if (!$deleteOptionsResult) {
+        $error = mysqli_error($conn);
+        echo json_encode(array("error" => "Failed to delete options for the question: $error"));
+        return;
+    }
+
+    // Delete the question itself
+    $deleteQuestionQuery = "DELETE FROM edu_trial_mcq_questions WHERE trail_mcq_num = '$questionId'";
+    $deleteQuestionResult = mysqli_query($conn, $deleteQuestionQuery);
+
+    if (!$deleteQuestionResult) {
+        $error = mysqli_error($conn);
+        echo json_encode(array("error" => "Failed to delete the question: $error"));
+        return;
+    }
+
+    // Return success message
+    echo json_encode(array("success" => true, "message" => "Question and its options deleted successfully"));
+}
+
+//update method
+
+function updateMCQuestionWithOptions($questionId, $questionData, $options) {
+    global $conn;
+
+    // Update the question
+    $questionText = mysqli_real_escape_string($conn, $questionData['trail_mcq_question']);
+
+    $questionQuery = "UPDATE edu_trial_mcq_questions SET trail_mcq_question = '$questionText' WHERE trail_mcq_num = '$questionId'";
+    $result1 = mysqli_query($conn, $questionQuery);
+    if (!$result1) {
+        echo json_encode(array("error" => "Failed to update question in database"));
+        return;
+    }
+
+    // Delete existing options for the question
+    $deleteOptionsQuery = "DELETE FROM edu_trial_mcq_options WHERE trial_mcq_num = '$questionId'";
+    $deleteOptionsResult = mysqli_query($conn, $deleteOptionsQuery);
+
+    if (!$deleteOptionsResult) {
+        echo json_encode(array("error" => "Failed to delete existing options from database"));
+        return;
+    }
+
+    // Insert new options for the question
+    for ($i = 0; $i < count($options); $i++) {
+        // Check if options array has enough items
+        if (isset($options[$i])) {
+            // Escape the option text
+            $optionText = mysqli_real_escape_string($conn, $options[$i]);
+            
+            // Insert the option into the database
+            $optionQuery = "INSERT INTO edu_trial_mcq_options (trial_mcq_num, trial_mcq_answer) VALUES ('$questionId', '$optionText')";
+            $result2 = mysqli_query($conn, $optionQuery);
+
+            // Check if option insertion was successful
+            if (!$result2) {
+                // If option insertion failed, log the error message
+                $error = mysqli_error($conn);
+                error_log("Failed to insert option into database: $error");
+                // Return the error message with more details
+                echo json_encode(array("error" => "Failed to insert option into database: $error"));
+                return;
+            }
+        }
+    }
+
+    // Retrieve the entered answer from $questionData
+    $enteredAnswer = isset($questionData['trail_mcq_answer']) ? $questionData['trail_mcq_answer'] : null;
+
+    // Check if the entered answer is provided and not empty
+    if (!isset($questionData['trail_mcq_answer']) || empty($questionData['trail_mcq_answer'])) {
+        echo json_encode(array("error" => "Entered answer is missing. Please make sure to provide an answer."));
+        return;
+    }
+
+    // Check if the entered answer is provided
+    if ($enteredAnswer === null || $enteredAnswer === '') {
+        echo json_encode(array("error" => "Entered answer is missing"));
+        return;
+    }
+
+    // If the entered answer is valid and provided, proceed with further validation
+    // Check if the entered answer matches any MCQ option
+    if (!in_array($enteredAnswer, $options)) {
+        // If the entered answer is not in the options array, return an error
+        echo json_encode(array("error" => "Entered answer does not match any MCQ option"));
+        return;
+    }
+
+    // If the entered answer matches an option, return success message along with the entered answer
+    echo json_encode(array("success" => true, "enteredAnswer" => $enteredAnswer));
+
+    // Fetch the trial_mcq_id from the result
+    $optionIdQuery = "SELECT trial_mcq_id FROM edu_trial_mcq_options WHERE trial_mcq_num = '$questionId' AND trial_mcq_answer = '$enteredAnswer'";
+    $optionIdResult = mysqli_query($conn, $optionIdQuery);
+
+    if (!$optionIdResult) {
+        // Handle the error
+        $error = mysqli_error($conn);
+        echo json_encode(array("error" => "Failed to fetch trial_mcq_id from database: $error"));
+        return;
+    }
+
+    // Check if there is a row fetched
+    if (mysqli_num_rows($optionIdResult) == 0) {
+        // Handle the case where no row is fetched
+        echo json_encode(array("error" => "No trial_mcq_id returned by the query."));
+        return;
+    }
+
+    // Fetch the trial_mcq_id from the result
+    $optionIdRow = mysqli_fetch_assoc($optionIdResult);
+
+    // Check if there is a row fetched
+    if (!$optionIdRow) {
+        // Handle the case where no row is fetched
+        echo json_encode(array("error" => "No trial_mcq_id returned by the query."));
+        return;
+    }
+
+    // Update the trial_mcq_id in the edu_trial_mcq_questions table
+    $trialnumQuery = "UPDATE edu_trial_mcq_questions SET trial_mcq_id = '$optionIdRow[trial_mcq_id]' WHERE trail_mcq_num = '$questionId'";
+    $trialnumResult = mysqli_query($conn, $trialnumQuery);
+
+    // Check if the update was successful
+    if (!$trialnumResult) {
+        // Handle the update failure
+        $error = mysqli_error($conn);
+        echo json_encode(array("error" => "Failed to update trial_mcq_id in edu_trial_mcq_questions table:$error"));
+        return;
+    }
+
+    // Return success message
+    echo json_encode(array("success" => true, "trial_mcq_id" => $optionIdRow['trial_mcq_id']));
+}
