@@ -15,7 +15,7 @@ function error422($message){
 }
 
 
-//Update 
+//delete 
 
 function deletePrelims($prilimsparams) {
     global $conn;
