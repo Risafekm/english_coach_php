@@ -43,6 +43,3 @@ function getCount() {
     }
 }
 ?>
-
-
-//http://localhost/english_coach_php/modules/module_count_select.php

@@ -1,4 +1,3 @@
-
 <?php
 // error_reporting(0);
 header("Access-Control-Allow-Origin:*");
@@ -13,8 +12,8 @@ $requestMethod = $_SERVER["REQUEST_METHOD"];
 
 if($requestMethod == 'GET'){
 
-$getUserCount = getUserCount();
-echo $getUserCount;
+$getUserCounts = getUserCounts();
+echo $getUserCounts;
 
 }else{
 $data = [
@@ -26,5 +25,3 @@ echo json_encode($data);
 }
 
 ?>
-
-//http://localhost/english_coach_php/user/read_user_count.php

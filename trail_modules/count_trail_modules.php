@@ -27,4 +27,3 @@ echo json_encode($data);
 
 ?>
 
-//http://localhost/english_coach_php/trail_modules/count_trail_modules.php

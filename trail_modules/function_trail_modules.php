@@ -34,7 +34,7 @@ function getCount() {
             }
             // Return the table count
             return $tableCount;
-        } else {
+        }  else {
             // Handle query error
             throw new Exception("Failed to execute query: $query");
         }
@@ -43,6 +43,7 @@ function getCount() {
         error_log("SQLite Error: " . $e->getMessage());
         return false;
     }
+
 }
 
 

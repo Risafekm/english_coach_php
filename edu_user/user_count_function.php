@@ -14,12 +14,12 @@ function error422($message){
 
 
 // Function to fetch table count from the database
-function getUserCount() {
+function getUserCounts() {
     global $conn;
     try {
         // Perform the SQL query to fetch the count of rows in the table
-        $query = "SELECT COUNT(mod_num) as count FROM edu_modules";
-        
+        $query = "SELECT COUNT(user_id) as count FROM edu_users";
+
         // Execute the query
         $result = $conn->query($query);
 
