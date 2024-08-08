@@ -1,7 +1,5 @@
 <?php
-// Use require_once or include_once
 error_reporting(0);
-
 include('functiontest1.php');
 
 header("Access-Control-Allow-Origin: *");
@@ -24,9 +22,6 @@ if ($requestMethod == 'PUT') {
         exit;
     }
 
-    // Assuming the structure of input data is as follows:
-    // $inputData = ['questionData' => [...], 'options' => [...], 'questionId' => ...];
-
     if (!isset($inputData['questionData']) || !isset($inputData['options']) || !isset($inputData['questionId'])) {
         $data = [
             'status' => 400,
@@ -37,7 +32,6 @@ if ($requestMethod == 'PUT') {
         exit;
     }
 
-    // Call updateMCQuestionWithOptions function with appropriate parameters
     $updateMCQuestionWithOptions = updateMCQuestionWithOptions($inputData['questionId'], $inputData['questionData'], $inputData['options']);
     echo $updateMCQuestionWithOptions;
 } else {

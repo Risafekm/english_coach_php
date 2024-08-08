@@ -1,5 +1,4 @@
 <?php
-
 include('functiontest1.php');
 error_reporting(0);
 
